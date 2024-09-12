@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Change Background Color on Click</title>
+	<style>
+		body {
+			margin: 0;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+			align-items: center;
+		}
+
+		button {
+			border: 0.1px solid black;
+			border-radius: 50px;
+			padding: 10px 20px;
+			font-size: 16px;
+		}
+
+		button:hover {
+			cursor: pointer;
+		}
+	</style>
+	<script defer>
+		function boom() {
+			document.getElementById("butn").style = "visibility: hidden";
+			let w = 0;
+			setInterval(() => {
+				const colors = ["red", "blue"];
+				const randomColor = colors[w % 2];
+				w++;
+				if (w > 999) {
+					w = 0
+				}
+				document.body.style.backgroundColor = randomColor;
+			}, 150);
+
+		}
+	</script>
+</head>
+
+<body>
+	<button onclick="boom()" id="butn">BOOM &nbsp;&nbsp;💥</button>
+</body>
+
+</html>
