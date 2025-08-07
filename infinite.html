@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="shortcut icon" href="https://res.cloudinary.com/dh69yvqdg/image/upload/v1754578635/Siren_Icon_xeozy2.png"
+		type="image/x-icon">
+	<title>⠀</title>
+	<style>
+		body {
+			margin: 0;
+			height: 100vh;
+			display: flex;
+			justify-content: center;
+		}
+
+		p {
+			display: none;
+			width: 100%;
+			padding: 10px;
+			color: white;
+			background-color: #00000070;
+			border-radius: 5px;
+			font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+			font-size: 1rem;
+			text-align: center;
+		}
+
+		@keyframes zoomFade {
+			0% {
+				opacity: 1;
+				transform: scale(1);
+			}
+
+			50% {
+				opacity: 1;
+				transform: scale(1);
+			}
+
+			100% {
+				opacity: 0;
+				transform: scale(2);
+			}
+		}
+
+		.zoom-fade {
+			animation: zoomFade 1s ease-in-out forwards;
+		}
+	</style>
+</head>
+
+<body style="background:blue">
+	<audio id="siren-sound" src="https://res.cloudinary.com/dh69yvqdg/video/upload/v1754571849/Siren_qvvl6g.m4a"
+		autoplay loop></audio>
+	<div id="p-div">
+		<p id="intervalText"></p>
+	</div>
+</body>
+<script>
+	/*============================*/
+	/* Create and update interval */
+	/*============================*/
+	//#region
+	let blinkInterval = 250;
+	const colorArr = ["red", "blue"];
+	let i = 0
+		+ 0;
+	let intervalId;
+
+	const startInterval = () => {
+		// Clear any existing interval
+		clearInterval(intervalId);
+
+		// Start a new interval
+		intervalId = setInterval(() => {
+			document.body.style.backgroundColor = colorArr[i % colorArr.length];
+			i++;
+			// console.log(i);
+		}, blinkInterval);
+	};
+
+	// Initial call
+	startInterval();
+	//#endregion
+
+
+	/*===============================*/
+	/* Siren sound play, mute/unmute */
+	/*===============================*/
+	//#region
+	const siren = document.getElementById('siren-sound');
+	siren.playbackRate = 0.8;
+
+	let played = false;
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'm' || e.key === 'M') {
+			toggleSiren();
+			updateIntervalText(siren.muted ? 'Siren Off' : 'Siren On');
+		}
+	});
+
+	const toggleSiren = () => {
+		// Play on first key press
+		if (!played) {
+			if (siren.paused) {
+				siren.play();
+			}
+			played = true;
+		}
+		// After first key press, do mute/unmute
+		else {
+			siren.muted = !siren.muted;
+		}
+	};
+	//#endregion
+
+
+	/*=======================*/
+	/* Animate Interval Text */
+	/*=======================*/
+	//#region
+	const intervalText = document.getElementById('intervalText');
+	let timeoutId;
+	const updateIntervalText = (message) => {
+		intervalText.style.display = 'block';
+		intervalText.classList.remove('zoom-fade');
+
+		intervalText.innerHTML = message;
+
+		// Force reflow to restart the animation
+		void intervalText.offsetWidth;
+		intervalText.classList.add('zoom-fade');
+		clearTimeout(timeoutId);
+		timeoutId = setTimeout(() => {
+			intervalText.style.display = 'none';
+		}, 3000);
+	};
+	//#endregion
+
+
+	/*====================================================*/
+	/* Control blink interval on mouse-scroll/up-down key */
+	/*====================================================*/
+	//#region
+	// Function to change blink interval
+	const changeInterval = (val) => {
+		if (val > 0 && blinkInterval < 1000) {
+			if (blinkInterval < 5) {
+				blinkInterval += 4;
+			}
+			else if (blinkInterval < 50) {
+				blinkInterval += 5;
+			}
+			else {
+				blinkInterval += 50;
+			}
+		} else if (val < 0 && blinkInterval > 1) {
+
+			if (blinkInterval <= 5) {
+				blinkInterval -= 4;
+			}
+			else if (blinkInterval <= 50) {
+				blinkInterval -= 5;
+			}
+			else {
+				blinkInterval -= 50;
+			}
+		}
+
+		// Display the changed value
+		updateIntervalText(blinkInterval);
+		startInterval();
+	};
+
+	// Mouse wheel event
+	document.addEventListener('wheel', (e) => {
+		if (e.deltaY < 0) {
+			// console.log('Scrolled up', e.deltaY);
+			changeInterval(1);
+		} else if (e.deltaY > 0) {
+			// console.log('Scrolled down', e.deltaY);
+			changeInterval(-1);
+		}
+
+	});
+
+	// Up/Down key event
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'ArrowUp') {
+			changeInterval(1);
+		} else if (e.key === 'ArrowDown') {
+			changeInterval(-1);
+		}
+	});
+	//#endregion
+
+
+	/*=============================================*/
+	/* Control blink interval on touchscreen swipe */
+	/*=============================================*/
+	//#region
+	let lastX = 0;
+	let accumulatedDelta = 0;
+	const threshold = 20;
+	let sirenEnabled = false;
+
+	document.addEventListener('touchstart', (e) => {
+		// swipeHappened = false;
+		lastX = e.touches[0].clientX;
+		accumulatedDelta = 0;
+	});
+
+	document.addEventListener('touchmove', (e) => {
+		const currentX = e.touches[0].clientX;
+		let deltaX = currentX - lastX;
+		accumulatedDelta += deltaX;
+
+		while (Math.abs(accumulatedDelta) >= threshold) {
+
+			if (accumulatedDelta > 0) {
+				// Your logic here for swipe right
+				changeInterval(1);
+
+				accumulatedDelta -= threshold;
+			} else {
+				// Your logic here for swipe left
+				changeInterval(-1);
+
+				accumulatedDelta += threshold;
+			}
+		}
+
+		lastX = currentX;
+	});
+	//#endregion
+
+
+	/*====================================*/
+	/* Double touch to mute/unmute siren  */
+	/*====================================*/
+	//#region
+	let lastTapTime = 0;
+	const doubleTapThreshold = 500; // ms
+
+	document.addEventListener('touchend', (e) => {
+		const currentTime = new Date().getTime();
+		const tapLength = currentTime - lastTapTime;
+
+		if (tapLength < doubleTapThreshold && tapLength > 0) {
+			onDoubleTap();
+			lastTapTime = 0; // reset
+		} else {
+			lastTapTime = currentTime;
+		}
+	});
+
+	const onDoubleTap = () => {
+		toggleSiren();
+		updateIntervalText(siren.muted ? 'Siren Off' : 'Siren On');
+	}
+	//#endregion
+
+
+</script>
+
+</html>
